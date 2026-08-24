@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokédex PWA Segura</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ef5350">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #fff; text-align: center; margin: 0; padding: 20px; }
+    .container { max-width: 500px; margin: 0 auto; }
+    h1 { color: #ef5350; margin-bottom: 5px; }
+    .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background-color: #222; color: #fff; font-size: 16px; }
+    button { background-color: #ef5350; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    button:hover { background-color: #d32f2f; }
+    .btn-secundario { background-color: #4caf50; }
+    .btn-secundario:hover { background-color: #388e3c; }
+    .card { background-color: #1e1e1e; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: none; border: 2px solid #ef5350; }
+    .card img { width: 130px; height: 130px; }
+    .badge-container { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
+    .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; background-color: #444; }
+    .stats { text-align: left; background: #2b2b2b; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 10px; }
+    .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    #loading { display: none; color: #ffeb3b; margin-top: 15px; }
+    #error-msg { color: #ff5252; margin-top: 15px; font-weight: bold; }
+    .offline-badge { background-color: #ff9800; color: black; padding: 8px; border-radius: 6px; display: none; font-weight: bold; margin-bottom: 15px; }
+    /* Módulo 3: Panel de Seguridad */
+    .panel-seguro { background-color: #1a1a1a; border: 1px solid #444; border-radius: 10px; padding: 15px; margin-top: 25px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="offline-badge" class="offline-badge">Modo sin conexión activo (Cargando datos locales)</div>
+    
+    <h1>Pokédex PWA</h1>
+    <p style="color: #aaa;">Práctica Integrada: Módulos 1, 2 y 3</p>
+    
+    <div class="input-group">
+      <input type="text" id="poke-input" placeholder="Nombre o ID del Pokémon...">
+      <button id="search-btn">Buscar</button>
+    </div>
+    <button id="random-btn" class="btn-secundario" style="width: 100%; margin-bottom: 10px;">Pokémon Aleatorio</button>
+
+    <div id="loading">Consultando PokeAPI en segundo plano...</div>
+    <div id="error-msg"></div>
+
+    <!-- Tarjeta del Pokémon -->
+    <div id="poke-card" class="card">
+      <h2 id="poke-name" style="margin: 0; text-transform: uppercase;"></h2>
+      <p id="poke-id" style="color: #ef5350; margin: 5px 0; font-weight: bold;"></p>
+      <img id="poke-img" src="" alt="pokemon">
+      <div id="poke-types" class="badge-container"></div>
+      
+      <div class="stats">
+        <div class="stat-row"><span>Ataque:</span> <span id="stat-attack" style="font-weight: bold;"></span></div>
+        <div class="stat-row"><span>Defensa:</span> <span id="stat-defense" style="font-weight: bold;"></span></div>
+        <div class="stat-row"><span>Velocidad:</span> <span id="stat-speed" style="font-weight: bold;"></span></div>
+      </div>
+
+      <button id="add-fav-btn" class="btn-secundario" style="margin-top: 15px; width: 100%;">Guardar Favorito Encriptado</button>
+    </div>
+
+    <!-- Módulo 3: Autenticación del Entrenador -->
+    <div class="panel-seguro">
+      <h3 style="margin-top: 0; color: #4caf50;">Área Segura del Entrenador</h3>
+      <div id="login-form">
+        <input type="password" id="trainer-pin" placeholder="PIN de Seguridad (4 dígitos)" style="width:90%; margin-bottom: 10px; text-align: center;">
+        <button id="login-btn" style="width: 100%;">Autenticarse</button>
+      </div>
+      <div id="secure-content" style="display: none;">
+        <p style="color: #4caf50; font-weight: bold; margin: 5px 0;">¡Sesión Protegida Activa!</p>
+        <div id="secure-fav-display" style="font-style: italic; margin-top: 10px;"></div>
+        <button id="logout-btn" style="background-color: #ff5252; margin-top: 10px; width: 100%;">Cerrar Sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
