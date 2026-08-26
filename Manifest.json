@@ -20,7 +20,8 @@
       "sizes": "512x512",
       "purpose": "maskable"
     }
-  ], "screenshots": [
+  ], 
+  "screenshots": [
         {
             "src": "assets/Narrow.jpeg",
             "sizes": "361x742",
