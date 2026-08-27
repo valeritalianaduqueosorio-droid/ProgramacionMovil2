@@ -26,196 +26,136 @@ const offlineBadge = document.getElementById("offline-badge");
 let currentPokemon = null;
 let activePin = null;
 
-
-
-// CORRECCIÓN 1: Sanitización compatible con números
-
 function sanitizeInput(input) {
-
-    // Convertimos el valor recibido a texto.
-    // Esto permite que funcione tanto con nombres como con IDs numéricos.
     input = String(input);
-
     const characterMap = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#x27;",
-        "/": "&#x2F;"
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#x27;", "/": "&#x2F;"
     };
-
     return input.replace(/[&<>"'/]/g, (match) => characterMap[match]);
 }
-
-
-
-// Cifrado de datos
 
 function encryptData(plainText, pin) {
     const payload = `${pin}_${plainText}`;
     return btoa(encodeURIComponent(payload));
 }
 
-
-
-// Descifrado de datos
-
 function decryptData(cipherText, pin) {
     try {
         const decodedPayload = decodeURIComponent(atob(cipherText));
         const [savedPin, originalPokemon] = decodedPayload.split("_");
-
-        return savedPin === pin ? originalPokemon : null;
-
+        return savedPin === pin? originalPokemon : null;
     } catch (error) {
         return null;
     }
 }
 
-
-
-// Operación de Red Asíncrona
-
 async function fetchPokemon(query) {
-
     loadingIndicator.style.display = "block";
     errorMessage.textContent = "";
     pokemonCard.style.display = "none";
-
-    // Convertimos query a texto antes de sanitizarlo.
     const safeQuery = sanitizeInput(query).trim().toLowerCase();
-
     if (!safeQuery) {
-        errorMessage.textContent =
-            "Por favor ingresa un nombre o ID válido.";
-
+        errorMessage.textContent = "Por favor ingresa un nombre o ID válido.";
         loadingIndicator.style.display = "none";
         return;
     }
-
-
-   
-    // CORRECCIÓN 2: HTTPS en lugar de HTTP
-   
-    const secureUrl =
-        `https://pokeapi.co/api/v2/pokemon/${safeQuery}`;
-
-
+    const secureUrl = `https://pokeapi.co/api/v2/pokemon/${safeQuery}`;
     try {
-
         const response = await fetch(secureUrl);
-
         if (!response.ok) {
             throw new Error("El Pokémon solicitado no existe.");
         }
-
         const data = await response.json();
-
         currentPokemon = data.name.toUpperCase();
-
         renderCard(data);
-
     } catch (error) {
-
-        console.error(
-            "Fallo en la capa de red o parseo de datos:",
-            error
-        );
-
+        console.error("Fallo en la capa de red o parseo de datos:", error);
         errorMessage.textContent = error.message;
-
     } finally {
-
         loadingIndicator.style.display = "none";
     }
 }
 
-
-
-// Renderizado de Datos
-
 function renderCard(data) {
-
     pokemonName.textContent = data.name;
-
     pokemonId.textContent = `N° ${data.id}`;
-
-    pokemonImage.src =
-        data.sprites.front_default ||
-        "https://via.placeholder.com/130";
-
-
-    // Tipos del Pokémon
+    pokemonImage.src = data.sprites.front_default || "https://via.placeholder.com/130";
     pokemonTypes.innerHTML = "";
-
     data.types.forEach((typeInfo) => {
-
         const badge = document.createElement("span");
-
         badge.className = "badge";
-
         badge.textContent = typeInfo.type.name;
-
         pokemonTypes.appendChild(badge);
     });
-
-
-  
-    // CORRECCIÓN 3: stats es un arreglo
-
-    const attack = data.stats.find(
-        (stat) => stat.stat.name === "attack"
-    );
-
-    const defense = data.stats.find(
-        (stat) => stat.stat.name === "defense"
-    );
-
-    const speed = data.stats.find(
-        (stat) => stat.stat.name === "speed"
-    );
-
-
-    attackStat.textContent =
-        attack ? attack.base_stat : "N/A";
-
-    defenseStat.textContent =
-        defense ? defense.base_stat : "N/A";
-
-    speedStat.textContent =
-        speed ? speed.base_stat : "N/A";
-
-
+    const attack = data.stats.find((stat) => stat.stat.name === "attack");
+    const defense = data.stats.find((stat) => stat.stat.name === "defense");
+    const speed = data.stats.find((stat) => stat.stat.name === "speed");
+    attackStat.textContent = attack? attack.base_stat : "N/A";
+    defenseStat.textContent = defense? defense.base_stat : "N/A";
+    speedStat.textContent = speed? speed.base_stat : "N/A";
     pokemonCard.style.display = "block";
 }
 
-
-
-// Escuchadores de Eventos
-
-
-// Botón buscar
-searchButton.addEventListener("click", () => {
-    fetchPokemon(pokemonInput.value);
-});
-
-
-// Buscar presionando Enter
+// Eventos de Búsqueda
+searchButton.addEventListener("click", () => fetchPokemon(pokemonInput.value));
 pokemonInput.addEventListener("keydown", (event) => {
-
-    if (event.key === "Enter") {
-        fetchPokemon(pokemonInput.value);
-    }
-
+    if (event.key === "Enter") fetchPokemon(pokemonInput.value);
 });
-
-
-// Botón Pokémon aleatorio
 randomButton.addEventListener("click", () => {
-
-    const randomId =
-        Math.floor(Math.random() * 151) + 1;
-
+    const randomId = Math.floor(Math.random() * 151) + 1;
     fetchPokemon(randomId);
 });
+
+// --- AQUÍ ESTABA LO QUE TE FALTABA PARA EL LOCAL STORAGE ---
+
+loginButton.addEventListener("click", () => {
+    const pin = trainerPin.value.trim();
+    if (pin.length < 4) {
+        alert("El PIN debe tener al menos 4 dígitos");
+        return;
+    }
+    activePin = pin;
+    loginForm.style.display = "none";
+    secureContent.style.display = "block";
+
+    // Recuperar favorito si existe
+    const saved = localStorage.getItem("secureFav");
+    if (saved) {
+        const decrypted = decryptData(saved, activePin);
+        if (decrypted) {
+            secureFavoriteDisplay.textContent = `Tu favorito guardado: ${decrypted}`;
+        } else {
+            secureFavoriteDisplay.textContent = "PIN incorrecto para el favorito guardado";
+        }
+    } else {
+        secureFavoriteDisplay.textContent = "No tienes favorito guardado";
+    }
+});
+
+addFavoriteButton.addEventListener("click", () => {
+    if (!currentPokemon) {
+        alert("Primero busca un Pokémon");
+        return;
+    }
+    if (!activePin) {
+        alert("Debes hacer login primero");
+        return;
+    }
+    const encrypted = encryptData(currentPokemon, activePin);
+    localStorage.setItem("secureFav", encrypted);
+    secureFavoriteDisplay.textContent = `Guardado: ${currentPokemon}`;
+    console.log("Guardado en Local Storage:", encrypted);
+});
+
+logoutButton.addEventListener("click", () => {
+    activePin = null;
+    loginForm.style.display = "block";
+    secureContent.style.display = "none";
+    trainerPin.value = "";
+});
+
+// Badge de Offline
+window.addEventListener("online", () => offlineBadge.style.display = "none");
+window.addEventListener("offline", () => offlineBadge.style.display = "block");
+if (!navigator.onLine) offlineBadge.style.display = "block";
