@@ -107,7 +107,108 @@ randomButton.addEventListener("click", () => {
     fetchPokemon(randomId);
 });
 
-// --- AQUÍ ESTABA LO QUE TE FALTABA PARA EL LOCAL STORAGE ---
+
+// MÓDULO DE FAVORITOS Y ÁREA SEGURA
+
+
+// Autenticación del entrenador
+loginButton.addEventListener("click", () => {
+
+    const pin = trainerPin.value.trim();
+
+    // Comprobar que el PIN tenga 4 dígitos
+    if (!/^\d{4}$/.test(pin)) {
+        alert("El PIN debe tener exactamente 4 dígitos.");
+        return;
+    }
+
+    // Guardamos temporalmente el PIN de la sesión
+    activePin = pin;
+
+    // Ocultamos el formulario de inicio de sesión
+    loginForm.style.display = "none";
+
+    // Mostramos el contenido seguro
+    secureContent.style.display = "block";
+
+    // Comprobamos si existe un favorito guardado
+    const savedFavorite =
+        localStorage.getItem("secure_pokedex_fav");
+
+    if (savedFavorite) {
+
+        const favorite = decryptData(savedFavorite, activePin);
+
+        if (favorite) {
+            secureFavoriteDisplay.textContent =
+                `Pokémon favorito: ${favorite}`;
+        } else {
+            secureFavoriteDisplay.textContent =
+                "No se pudo verificar el favorito guardado.";
+        }
+
+    } else {
+
+        secureFavoriteDisplay.textContent =
+            "Todavía no tienes un Pokémon favorito guardado.";
+    }
+});
+
+
+
+// GUARDAR FAVORITO
+
+
+addFavoriteButton.addEventListener("click", () => {
+
+    // Verificar que el usuario esté autenticado
+    if (!activePin) {
+        alert("Primero debes autenticarte con tu PIN.");
+        return;
+    }
+
+    // Verificar que exista un Pokémon seleccionado
+    if (!currentPokemon) {
+        alert("Primero debes buscar un Pokémon.");
+        return;
+    }
+
+    // Encriptar el nombre del Pokémon
+    const encryptedFavorite =
+        encryptData(currentPokemon, activePin);
+
+    // Guardar el dato en Local Storage
+    localStorage.setItem(
+        "secure_pokedex_fav",
+        encryptedFavorite
+    );
+
+    // Mostrar confirmación
+    secureFavoriteDisplay.textContent =
+        `Pokémon favorito: ${currentPokemon}`;
+
+    alert("Pokémon favorito guardado correctamente.");
+});
+
+
+
+// CERRAR SESIÓN
+
+
+logoutButton.addEventListener("click", () => {
+
+    activePin = null;
+
+    trainerPin.value = "";
+
+    loginForm.style.display = "block";
+
+    secureContent.style.display = "none";
+
+    secureFavoriteDisplay.textContent = "";
+});
+
+// --- FALTANTE DEL LOCAL STORAGE ---
 
 loginButton.addEventListener("click", () => {
     const pin = trainerPin.value.trim();
