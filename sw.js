@@ -1,3 +1,11 @@
+self.addEventListener("install", (event) => {
+    console.log("Service Worker instalado");
+});
+
+self.addEventListener("activate", (event) => {
+    console.log("Service Worker activo");
+});
+
 const CACHE_NAME = 'v1-cache-pwa';
 const urlsToCache = [
   '/',
